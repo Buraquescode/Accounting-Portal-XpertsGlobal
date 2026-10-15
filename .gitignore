@@ -1,0 +1,16 @@
+node_modules
+.env
+.env.test
+backend/uploads/*
+!backend/uploads/.gitkeep
+dist
+coverage
+.DS_Store
+CLAUDE.md
+Claude_Build_Prompts_COMBINED_v2.md
+scaffold.sh
+.claude/
+CLAUDE.md
+Claude_Build_Prompts_COMBINED_v2.md
+scaffold.sh
+.claude/

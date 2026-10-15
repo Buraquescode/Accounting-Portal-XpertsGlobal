@@ -1,0 +1,15 @@
+services:
+  accounting-db:
+    image: postgres:16
+    container_name: accounting-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: accounting_portal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - accounting_pgdata:/var/lib/postgresql/data
+volumes:
+  accounting_pgdata:
