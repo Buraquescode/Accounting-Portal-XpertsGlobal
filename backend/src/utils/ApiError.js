@@ -1,4 +1,3 @@
-// An error we throw on purpose; the error handler turns it into a clean JSON response.
 export class ApiError extends Error {
   constructor(statusCode, message, errors) {
     super(message);
@@ -13,3 +12,5 @@ export class ApiError extends Error {
   static notFound(message = 'Not found') { return new ApiError(404, message); }
   static conflict(message = 'Conflict') { return new ApiError(409, message); }
 }
+
+export default ApiError;
