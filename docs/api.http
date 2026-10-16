@@ -1,0 +1,204 @@
+### Accounting & Procurement Portal - API collection
+### Use with the "REST Client" extension in VS Code (click "Send Request" above any block).
+### Start the API first: npm run dev:api  (http://localhost:4000)
+###
+### HOW SESSIONS WORK HERE: login sets an httpOnly cookie and REST Client keeps it.
+### The cookie belongs to whoever logged in LAST, so run a login block, then the requests you want as that user.
+### Demo password for every user: Password@123
+
+@host = http://localhost:4000/api
+@password = Password@123
+@json = application/json
+
+###############################################################
+# 0. HEALTH (public)
+###############################################################
+
+GET {{host}}/health
+
+###############################################################
+# 1. AUTH
+###############################################################
+
+### Login as Sara (Requester)
+# @name loginSara
+POST {{host}}/auth/login
+Content-Type: {{json}}
+
+{ "email": "sara@xperts.test", "password": "{{password}}" }
+
+### Login as Asif (Requester + Approver)
+# @name loginAsif
+POST {{host}}/auth/login
+Content-Type: {{json}}
+
+{ "email": "asif@xperts.test", "password": "{{password}}" }
+
+### Login as Muhammad (Final Approver)
+# @name loginMuhammad
+POST {{host}}/auth/login
+Content-Type: {{json}}
+
+{ "email": "muhammad@xperts.test", "password": "{{password}}" }
+
+### Login as Accounting (Approver + Accounting)
+# @name loginAccounting
+POST {{host}}/auth/login
+Content-Type: {{json}}
+
+{ "email": "accounting@xperts.test", "password": "{{password}}" }
+
+### Login as Ali (Requester) - useful for the "cannot read Sara's request" (403) check
+# @name loginAli
+POST {{host}}/auth/login
+Content-Type: {{json}}
+
+{ "email": "ali@xperts.test", "password": "{{password}}" }
+
+### Wrong password -> 401 "Invalid email or password" (5 failures in 15 min -> 429)
+POST {{host}}/auth/login
+Content-Type: {{json}}
+
+{ "email": "sara@xperts.test", "password": "wrong-password" }
+
+### Who am I?
+GET {{host}}/auth/me
+
+### Logout (revokes the session in the database; /auth/me then returns 401)
+POST {{host}}/auth/logout
+
+###############################################################
+# 2. USERS
+###############################################################
+
+### Approvers for the form dropdown
+# @name approvers
+GET {{host}}/users/approvers
+
+@approverId = {{approvers.response.body.data[0].id}}
+
+###############################################################
+# 3. REQUESTS - read
+###############################################################
+
+### List (role-scoped). Filters: status, type, page, limit
+# @name list
+GET {{host}}/requests?page=1&limit=10
+
+### Filter: only requests waiting for the final decision
+GET {{host}}/requests?status=AWAITING_FINAL_APPROVAL
+
+### Filter: only expenses
+GET {{host}}/requests?type=EXPENSE
+
+@requestId = {{list.response.body.data[0].id}}
+
+### Detail + history + availableActions for the current user
+GET {{host}}/requests/{{requestId}}
+
+### History timeline only
+GET {{host}}/requests/{{requestId}}/history
+
+### Receipt file (authenticated; opens inline)
+GET {{host}}/requests/{{requestId}}/file
+
+###############################################################
+# 4. REQUESTS - create (log in as Sara or Asif first)
+###############################################################
+
+### Submit a request with a receipt. Put a small receipt.pdf next to this file.
+# @name create
+POST {{host}}/requests
+Content-Type: multipart/form-data; boundary=----PortalBoundary
+
+------PortalBoundary
+Content-Disposition: form-data; name="type"
+
+EXPENSE
+------PortalBoundary
+Content-Disposition: form-data; name="currency"
+
+PKR
+------PortalBoundary
+Content-Disposition: form-data; name="amount"
+
+2500.50
+------PortalBoundary
+Content-Disposition: form-data; name="notes"
+
+Taxi to client meeting
+------PortalBoundary
+Content-Disposition: form-data; name="selectedApproverId"
+
+{{approverId}}
+------PortalBoundary
+Content-Disposition: form-data; name="file"; filename="receipt.pdf"
+Content-Type: application/pdf
+
+< ./receipt.pdf
+------PortalBoundary--
+
+@newId = {{create.response.body.data.id}}
+
+###############################################################
+# 5. WORKFLOW ACTIONS
+# Replace {{newId}} with a specific request id if you like.
+###############################################################
+
+### Selected approver (Asif) starts review: PENDING -> UNDER_REVIEW
+POST {{host}}/requests/{{newId}}/start-review
+Content-Type: {{json}}
+
+{ "comment": "Looking at it now" }
+
+### Selected approver forwards: -> AWAITING_FINAL_APPROVAL (comment optional)
+POST {{host}}/requests/{{newId}}/forward
+Content-Type: {{json}}
+
+{ "comment": "Receipt checked, looks fine" }
+
+### Reject (approver or final approver). Comment is REQUIRED -> 400 without it
+POST {{host}}/requests/{{newId}}/reject
+Content-Type: {{json}}
+
+{ "comment": "Receipt is unreadable, please resubmit" }
+
+### Reject WITHOUT comment -> 400 "A comment is required for this action"
+POST {{host}}/requests/{{newId}}/reject
+Content-Type: {{json}}
+
+{}
+
+### Final approval (Muhammad only): AWAITING_FINAL_APPROVAL -> APPROVED
+POST {{host}}/requests/{{newId}}/approve
+Content-Type: {{json}}
+
+{ "comment": "Approved" }
+
+### Mark paid (Accounting only, bonus): APPROVED -> PAID
+POST {{host}}/requests/{{newId}}/mark-paid
+Content-Type: {{json}}
+
+{ "comment": "Paid by bank transfer" }
+
+###############################################################
+# 6. SECURITY CHECKS (expected results in the comment)
+###############################################################
+
+### Approver tries to APPROVE (logged in as Asif) -> 403
+POST {{host}}/requests/{{newId}}/approve
+Content-Type: {{json}}
+
+{}
+
+### Not logged in -> 401
+GET {{host}}/requests
+
+### Invalid id format -> 400 "Invalid request id"
+GET {{host}}/requests/not-a-uuid
+
+### Acting twice on the same step -> 409 "Request is APPROVED, cannot APPROVE"
+POST {{host}}/requests/{{newId}}/approve
+Content-Type: {{json}}
+
+{}
