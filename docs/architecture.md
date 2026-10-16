@@ -9,10 +9,10 @@ sequenceDiagram
   participant API as Express API
   participant DB as PostgreSQL
   S->>API: POST /requests (multipart + cookie)
-  API->>API: authenticate, authorize(REQUESTER), multer, magic bytes, zod
+  API->>API: authenticate, authorize REQUESTER, multer, magic bytes, zod
   API->>DB: TX: insert request (PENDING) + audit SUBMITTED
   A->>API: POST /requests/:id/forward
-  API->>API: authorize(APPROVER); service checks selected approver, not requester, status
+  API->>API: authorize APPROVER, then service checks selected approver, not requester, status
   API->>DB: TX: updateMany(where status=PENDING) + audit FORWARDED
   M->>API: POST /requests/:id/approve
   API->>DB: TX: updateMany(where status=AWAITING_FINAL_APPROVAL) + audit APPROVED
