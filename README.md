@@ -2,7 +2,23 @@
 
 A request-submission and multi-tier approval portal for Xperts Global. Staff submit Expense, Fund and Budget requests with a receipt; the selected approver can only **reject or forward**; the **Final Approver** (Muhammad) makes the only approving decision. Every status change is written to an append-only audit trail enforced by PostgreSQL itself.
 
-> Screenshots to add in `docs/screenshots/`: `01-login.png` (demo accounts open), `02-dashboard-approver.png` (Asif, action buttons visible), `03-new-request.png` (form with file attached), `04-detail-timeline.png` (history timeline + progress stepper).
+## Screenshots
+
+Stored in `docs/screenshots/`.
+
+| File | What it shows |
+|---|---|
+| `01-login.png` | Login page with demo accounts open |
+| `02-dashboard-approver.png` | Approver dashboard (Asif), action buttons visible |
+| `03-dashboard-approver.png` | Approver dashboard, second view |
+| `04-new-request.png` | New request form with file attached |
+| `05-detail-timeline.png` | Request detail with history timeline and progress stepper |
+
+![Login](docs/screenshots/01-login.png)
+![Dashboard (Approver)](docs/screenshots/02-dashboard-approver.png)
+![Dashboard (Approver, second view)](docs/screenshots/03-dashboard-approver.png)
+![New Request](docs/screenshots/04-new-request.png)
+![Request Detail and Timeline](docs/screenshots/05-detail-timeline.png)
 
 ## Features
 | Assessment item | Implementation |
@@ -157,7 +173,7 @@ All routes are under `/api`; responses are `{ success, data, meta? }` or `{ succ
 ```
 accounting-portal/
   docker-compose.yml  package.json  README.md  CLAUDE.md
-  docs/            architecture.md  api.http  demo-script.md
+  docs/            architecture.md  api.http  demo-script.md  screenshots/
   backend/
     prisma/        schema.prisma  seed.js  migrations/
     src/           config  routes  controllers  services  repositories
