@@ -16,17 +16,9 @@ Stored in `docs/screenshots/`.
 
 ### Login
 ![Login](docs/screenshots/01-login.png)
-
-### Approver dashboard
 ![Dashboard (Approver)](docs/screenshots/02-dashboard-approver.png)
-
-### Approver dashboard (second view)
 ![Dashboard (Approver, second view)](docs/screenshots/03-dashboard-approver.png)
-
-### New request
 ![New Request](docs/screenshots/04-new-request.png)
-
-### Request detail and timeline
 ![Request Detail and Timeline](docs/screenshots/05-detail-timeline.png)
 
 ## Features
