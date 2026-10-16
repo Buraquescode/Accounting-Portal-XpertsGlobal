@@ -1,0 +1,14 @@
+.dropzone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;background:var(--blue-50);cursor:pointer;transition:border-color .15s,background .15s}
+.dropzone:hover,.dropzone:focus-visible,.dropzone--over{border-color:var(--blue-500);background:var(--blue-100)}
+.dropzone--error{border-color:var(--danger)}
+.dropzone__hint{color:var(--muted);font-size:.875rem;margin:4px 0 0}
+.dropzone__file{display:flex;align-items:center;gap:12px;text-align:left}
+.dropzone__thumb{width:56px;height:56px;border-radius:8px;object-fit:cover;border:1px solid var(--border);background:#fff}
+.dropzone__icon{width:56px;height:56px;border-radius:8px;display:grid;place-items:center;background:#fff;border:1px solid var(--border);color:var(--blue-700);font-weight:700}
+.dropzone__meta{flex:1;min-width:0}
+.dropzone__name{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.steps-list{margin:0;padding-left:18px;display:grid;gap:10px;color:var(--text)}
+.steps-list small{display:block;color:var(--muted)}
+.form-grid{display:grid;gap:16px;grid-template-columns:1fr}
+.new-request{display:grid;gap:20px;grid-template-columns:1fr;align-items:start}
+@media(min-width:768px){.form-grid--2{grid-template-columns:1fr 1fr}.new-request{grid-template-columns:2fr 1fr}}

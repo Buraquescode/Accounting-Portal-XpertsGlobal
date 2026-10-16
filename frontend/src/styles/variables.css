@@ -1,0 +1,11 @@
+/* Design tokens: white + blue. Breakpoints (CSS vars cannot be used in media queries): 480px, 768px, 1024px, 1280px. */
+:root {
+  --blue-900:#0b2a6f; --blue-700:#1e40af; --blue-600:#1d4ed8; --blue-500:#2563eb; --blue-100:#dbeafe; --blue-50:#eff6ff;
+  --white:#fff; --text:#0f172a; --muted:#64748b; --border:#dbe4f0;
+  --success:#16a34a; --danger:#dc2626; --warning:#d97706;
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px; --space-7:48px;
+  --radius:12px; --radius-sm:8px;
+  --shadow-sm:0 1px 2px rgba(11,42,111,.06); --shadow-md:0 6px 20px rgba(11,42,111,.10);
+  --fs-xs:.75rem; --fs-sm:.875rem; --fs-md:1rem; --fs-lg:1.25rem; --fs-xl:1.625rem;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}

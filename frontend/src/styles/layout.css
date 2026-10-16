@@ -1,0 +1,23 @@
+.app-shell{min-height:100vh;background:var(--blue-50);display:flex;flex-direction:column}
+.container{width:100%;max-width:1180px;margin:0 auto;padding:0 var(--space-4)}
+.main{flex:1;padding:var(--space-5) 0 var(--space-7)}
+.page-header{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;justify-content:space-between;margin-bottom:var(--space-5)}
+.page-header__sub{color:var(--muted);margin-top:var(--space-1)}
+.grid{display:grid;gap:var(--space-4)}
+.grid--2{grid-template-columns:1fr}
+.stack{display:flex;flex-direction:column;gap:var(--space-4)}
+.row{display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap}
+@media (min-width:1024px){.grid--2{grid-template-columns:2fr 1fr}}
+
+.navbar{background:var(--blue-700);color:var(--white);position:sticky;top:0;z-index:20;box-shadow:var(--shadow-sm)}
+.navbar__inner{display:flex;align-items:center;gap:var(--space-4);min-height:60px}
+.navbar__brand{font-weight:700;font-size:1.1rem;color:var(--white);text-decoration:none;letter-spacing:.2px}
+.navbar__links{display:none;gap:var(--space-4);margin-left:var(--space-4)}
+.navbar__links a{color:var(--blue-100);text-decoration:none;padding:6px 10px;border-radius:var(--radius-sm)}
+.navbar__links a:hover,.navbar__links a.active{background:rgba(255,255,255,.14);color:var(--white)}
+.navbar__user{margin-left:auto;display:none;align-items:center;gap:var(--space-3)}
+.navbar__toggle{margin-left:auto;background:transparent;border:1px solid rgba(255,255,255,.4);color:var(--white);border-radius:var(--radius-sm);padding:6px 10px;cursor:pointer}
+.navbar__menu{display:flex;flex-direction:column;gap:var(--space-2);padding:var(--space-3) var(--space-4) var(--space-4);border-top:1px solid rgba(255,255,255,.2)}
+.navbar__menu a{color:var(--white);text-decoration:none;padding:8px 0}
+@media (min-width:768px){.navbar__links,.navbar__user{display:flex}.navbar__toggle{display:none}.navbar__menu{display:none}}
+.role-chip{font-size:var(--fs-xs);padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.18);color:var(--white)}

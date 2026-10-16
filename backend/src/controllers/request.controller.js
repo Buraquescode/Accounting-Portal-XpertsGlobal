@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { env } from '../config/env.js';
 import * as requestService from '../services/request.service.js';
 import * as workflowService from '../services/workflow.service.js';
 import asyncHandler from '../utils/asyncHandler.js';
@@ -36,6 +37,11 @@ export const file = asyncHandler(async (req, res, next) => {
   res.setHeader('Content-Length', info.size);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Cache-Control', 'private, no-store');
+  // The SPA (another origin in dev) shows this file in <img>/<iframe>. Helmet's defaults block that,
+  // so relax ONLY this authenticated route: allow embedding by our own frontend and nobody else.
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.removeHeader('X-Frame-Options');
+  res.setHeader('Content-Security-Policy', `frame-ancestors ${env.CLIENT_ORIGIN}`);
   const asciiName = info.originalName.replace(/[^\w.\- ]/g, '_');
   res.setHeader(
     'Content-Disposition',
