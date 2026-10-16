@@ -1,0 +1,162 @@
+// Accounting & Procurement Portal - database schema.
+// Design rules: every table is keyed by uuid (except the log), nothing is ever hard-deleted
+// (all relations use onDelete: Restrict), and the audit log is append-only (enforced in the
+// database by triggers, see the init migration).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+/// What a person is allowed to do. A user can hold several roles (e.g. Asif is REQUESTER + APPROVER).
+enum Role {
+  REQUESTER
+  APPROVER
+  FINAL_APPROVER
+  ACCOUNTING
+}
+
+/// The three kinds of request from the proposal.
+enum RequestType {
+  EXPENSE         // money already spent
+  FUND_REQUEST    // money needed before spending
+  BUDGET_APPROVAL // approval for a planned purchase
+}
+
+/// Supported currencies. Amounts are never converted, the original currency is kept.
+enum Currency {
+  PKR
+  USD
+}
+
+/// Position of a request in the approval flow. Allowed moves live in backend/src/config/workflow.js.
+enum RequestStatus {
+  PENDING
+  UNDER_REVIEW
+  AWAITING_FINAL_APPROVAL
+  APPROVED
+  REJECTED
+  PAID
+}
+
+/// What happened, written to the audit log.
+enum AuditAction {
+  SUBMITTED
+  REVIEW_STARTED
+  FORWARDED
+  APPROVED
+  REJECTED
+  PAID
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+/// A person who can log in.
+model User {
+  id           String  @id @default(uuid())
+  name         String
+  email        String  @unique
+  passwordHash String
+  /// A user may hold more than one role.
+  roles        Role[]
+  isActive     Boolean @default(true)
+
+  /// 2FA fields are prepared for the bonus step; the login flow ignores them for now.
+  twoFactorEnabled Boolean @default(false)
+  /// Encrypted TOTP secret, used in the bonus step.
+  twoFactorSecret  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requestsCreated  Request[]         @relation("RequestRequester")
+  /// Requests where this user was chosen as the first approver.
+  requestsAssigned Request[]         @relation("RequestSelectedApprover")
+  auditLogs        RequestAuditLog[]
+  sessions         Session[]
+
+  @@map("users")
+}
+
+/// One row per login, so sessions can be listed and revoked.
+model Session {
+  id        String    @id @default(uuid())
+  userId    String
+  userAgent String?
+  ipAddress String?
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  /// Set on logout or when an admin kills the session. Rows are never deleted.
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// An expense, fund request or budget approval, with its receipt.
+model Request {
+  id          String        @id @default(uuid())
+  /// Human friendly number such as REQ-2026-0001, generated in the service layer.
+  referenceNo String        @unique
+  type        RequestType
+  currency    Currency
+  /// Exact decimal money value; a CHECK constraint in the migration forces amount > 0.
+  amount      Decimal       @db.Decimal(14, 2)
+  notes       String
+  status      RequestStatus @default(PENDING)
+
+  requesterId        String
+  selectedApproverId String
+
+  /// Receipt / bill / invoice. The file itself lives in backend/uploads under a random name.
+  fileOriginalName String
+  fileStoredName   String
+  fileMimeType     String
+  fileSize         Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requester        User              @relation("RequestRequester", fields: [requesterId], references: [id], onDelete: Restrict)
+  selectedApprover User              @relation("RequestSelectedApprover", fields: [selectedApproverId], references: [id], onDelete: Restrict)
+  auditLogs        RequestAuditLog[]
+
+  @@index([status])
+  @@index([requesterId])
+  @@index([selectedApproverId])
+  @@index([createdAt])
+  @@map("requests")
+}
+
+/// Append-only history of every action on a request. No updatedAt column on purpose.
+/// UPDATE, DELETE and TRUNCATE are blocked by database triggers.
+model RequestAuditLog {
+  /// Auto-increment gives a strict order even when two rows share a timestamp.
+  id         Int           @id @default(autoincrement())
+  requestId  String
+  actorId    String
+  action     AuditAction
+  /// Null when the request is first submitted.
+  fromStatus RequestStatus?
+  toStatus   RequestStatus
+  comment    String?
+  createdAt  DateTime      @default(now())
+
+  request Request @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  actor   User    @relation(fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([requestId, createdAt])
+  @@map("request_audit_logs")
+}
