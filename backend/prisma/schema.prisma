@@ -71,9 +71,8 @@ model User {
   roles        Role[]
   isActive     Boolean @default(true)
 
-  /// 2FA fields are prepared for the bonus step; the login flow ignores them for now.
+
   twoFactorEnabled Boolean @default(false)
-  /// Encrypted TOTP secret, used in the bonus step.
   twoFactorSecret  String?
 
   createdAt DateTime @default(now())
